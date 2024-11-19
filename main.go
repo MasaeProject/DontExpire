@@ -7,12 +7,13 @@ import (
 	"strings"
 )
 
+var verbose bool
+
 func main() {
 	var domains string
 	var checkSSLFlag bool
 	var checkDomainFlag bool
 	var useProxy bool
-	var verbose bool
 	var whoisServer string
 
 	flag.StringVar(&domains, "u", "", "输入一个或多个域名（用,分隔）")
@@ -45,12 +46,14 @@ func main() {
 			if verbose {
 				fmt.Printf("开始检查 %s 的 SSL 证书...\n", domain)
 			}
+			checkSSL(domain)
 		}
 
 		if checkDomainFlag {
 			if verbose {
 				fmt.Printf("开始检查 %s 的域名到期...\n", domain)
 			}
+			// checkDomainExpiry(domain, whoisServer)
 		}
 	}
 }
