@@ -53,7 +53,7 @@ func main() {
 			if verbose {
 				fmt.Printf("开始检查 %s 的域名到期...\n", domain)
 			}
-			// checkDomainExpiry(domain, whoisServer)
+			checkDomainExpiry(domain, whoisServer)
 		}
 	}
 }

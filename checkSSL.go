@@ -37,7 +37,7 @@ func checkSSL(domain string) {
 	}
 
 	if verbose {
-		fmt.Printf("%s :\n", domain)
+		fmt.Printf("%s ( %s ):\n", domain, conn.RemoteAddr())
 		fmt.Printf("    %s\n", days)
 		fmt.Printf("    证书生效日期: %s\n", notBefore.Format("2006-01-02 15:04:05"))
 		fmt.Printf("    证书失效日期: %s\n", notAfter.Format("2006-01-02 15:04:05"))
