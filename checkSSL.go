@@ -1,30 +1,40 @@
 package main
 
+// go run . -u google.com -p socks5://127.0.0.1:23332 -s -v
+
 import (
 	"crypto/tls"
 	"fmt"
 	"strings"
 	"time"
+
+	"golang.org/x/net/proxy"
 )
 
-func checkSSL(domain string) {
-	conn, err := tls.Dial("tcp", domain+":443", &tls.Config{})
+func checkSSL(domain string, dialer proxy.Dialer) {
+	conn, err := dialer.Dial("tcp", domain+":443")
 	if err != nil {
 		fmt.Printf("SSL 连接失败 (%s): %v\n", domain, err)
 		if strings.Contains(err.Error(), "certificate has expired") || strings.Contains(err.Error(), "not yet valid") {
-			config := &tls.Config{InsecureSkipVerify: true}
-			conn, err = tls.Dial("tcp", domain+":443", config)
+			fmt.Printf("尝试获取过期的证书信息...\n")
+			conn, err = dialer.Dial("tcp", domain+":443")
 			if err != nil {
-				if verbose {
-					fmt.Printf("无法获取证书信息 (%s): %v\n", domain, err)
-				}
+				fmt.Printf("无法获取证书信息 (%s): %v\n", domain, err)
 				return
 			}
 		}
 	}
 	defer conn.Close()
 
-	cert := conn.ConnectionState().PeerCertificates[0]
+	config := &tls.Config{ServerName: domain, InsecureSkipVerify: true}
+	tlsConn := tls.Client(conn, config)
+	err = tlsConn.Handshake()
+	if err != nil {
+		fmt.Printf("TLS 握手失败 (%s): %v\n", domain, err)
+		return
+	}
+
+	cert := tlsConn.ConnectionState().PeerCertificates[0]
 	notBefore := cert.NotBefore
 	notAfter := cert.NotAfter
 	daysLeft := int(time.Until(notAfter).Hours() / 24)
